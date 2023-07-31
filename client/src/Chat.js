@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 function Chat({ socket, username }) {
   const [currentMessage, setCurrentMessage] = useState("");
@@ -10,11 +10,18 @@ function Chat({ socket, username }) {
         author: username,
         message: currentMessage,
       };
-
+      socket.emit("send_message", messageData);
       setMessageList((list) => [...list, messageData]);
       setCurrentMessage("");
     }
   };
+
+  useEffect(() => {
+    socket.on("broadcast_message", (data) => {
+      setMessageList((list) => [...list, data]);
+    });
+    return () => socket.off("broadcast_message");
+  }, [socket]);
 
   return (
     <div className="chat-window">
